@@ -1,0 +1,3 @@
+*.scala	text	diff=scala	filter=remove_trailing_whitespace
+/.gitattributes	text	filter=sort
+/.gitignore	text	filter=sort
