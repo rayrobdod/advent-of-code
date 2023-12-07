@@ -37,9 +37,11 @@ enum HandType extends java.lang.Enum[HandType]:
 case class Hand(cards:List[CardRank], bid: Int):
 	def typ: HandType =
 		val counts = cards
-			.groupBy(Predef.identity)
+			.groupBy:
+				Predef.identity
 			.values
-			.map(_.length)
+			.map:
+				_.length
 			.toList
 			.sorted
 			.reverse
@@ -73,8 +75,10 @@ object Hand:
 object Day7Part1 extends IOApp:
 	def run(args:List[String]): IO[ExitCode] =
 		Files[IO].readUtf8Lines(Path("input.txt"))
-			.filter(_.nonEmpty)
-			.map({case s"$cards $bid" => Hand(cards.map(CardRank.fromChar).toList, bid.toInt)})
+			.filter:
+				_.nonEmpty
+			.map:
+				case s"$cards $bid" => Hand(cards.map(CardRank.fromChar).toList, bid.toInt)
 			.compile.toList
 			.map: hands =>
 				hands
@@ -84,5 +88,7 @@ object Day7Part1 extends IOApp:
 					.map: (hand, index) =>
 						hand.bid * (1 + index)
 					.sum
-			.flatMap(IO.println)
-			.map(_ => ExitCode(0))
+			.flatMap:
+				IO.println
+			.map:
+				_ => ExitCode(0)
