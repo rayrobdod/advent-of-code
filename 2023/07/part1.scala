@@ -8,33 +8,33 @@ import cats.effect.ExitCode
 import fs2.io.file.Files
 import fs2.io.file.Path
 
-enum Card extends java.lang.Enum[Card]:
+enum CardRank extends java.lang.Enum[CardRank]:
 	case Ace, King, Queen, Jack
 	case Ten, Nine, Eight, Seven, Six
 	case Five, Four, Three, Two
 
-object Card:
-	def fromChar(c:Char):Card =
+object CardRank:
+	def fromChar(c:Char):CardRank =
 		c match
-			case '2' => Card.Two
-			case '3' => Card.Three
-			case '4' => Card.Four
-			case '5' => Card.Five
-			case '6' => Card.Six
-			case '7' => Card.Seven
-			case '8' => Card.Eight
-			case '9' => Card.Nine
-			case 'T' => Card.Ten
-			case 'J' => Card.Jack
-			case 'Q' => Card.Queen
-			case 'K' => Card.King
-			case 'A' => Card.Ace
+			case '2' => CardRank.Two
+			case '3' => CardRank.Three
+			case '4' => CardRank.Four
+			case '5' => CardRank.Five
+			case '6' => CardRank.Six
+			case '7' => CardRank.Seven
+			case '8' => CardRank.Eight
+			case '9' => CardRank.Nine
+			case 'T' => CardRank.Ten
+			case 'J' => CardRank.Jack
+			case 'Q' => CardRank.Queen
+			case 'K' => CardRank.King
+			case 'A' => CardRank.Ace
 
 enum HandType extends java.lang.Enum[HandType]:
 	case FiveKind, FourKind, FullHouse, ThreeKind
 	case TwoPair, OnePair, HighCard
 
-case class Hand(cards:List[Card], bid: Int):
+case class Hand(cards:List[CardRank], bid: Int):
 	def typ: HandType =
 		val counts = cards
 			.groupBy(Predef.identity)
@@ -56,12 +56,12 @@ case class Hand(cards:List[Card], bid: Int):
 object Hand:
 	given cats.Show[Hand] = cats.Show.fromToString
 
-	private given Ordering[List[Card]] with
-		def compare(x: List[Card], y: List[Card]): Int =
+	private given Ordering[List[CardRank]] with
+		def compare(x: List[CardRank], y: List[CardRank]): Int =
 			x
 				.zip(y)
 				.map: (a, b) =>
-					implicitly[Ordering[Card]].compare(a, b)
+					implicitly[Ordering[CardRank]].compare(a, b)
 				.dropWhile: value =>
 					value == 0
 				.headOption
@@ -74,8 +74,7 @@ object Day7Part1 extends IOApp:
 	def run(args:List[String]): IO[ExitCode] =
 		Files[IO].readUtf8Lines(Path("input.txt"))
 			.filter(_.nonEmpty)
-			.map(_.split("\\s+"))
-			.map({case Array(cards, bid) => Hand(cards.map(Card.fromChar).toList, bid.toInt)})
+			.map({case s"$cards $bid" => Hand(cards.map(CardRank.fromChar).toList, bid.toInt)})
 			.compile.toList
 			.map: hands =>
 				hands
