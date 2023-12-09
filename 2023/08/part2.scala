@@ -9,15 +9,6 @@ import cats.effect.ExitCode
 import fs2.io.file.Files
 import fs2.io.file.Path
 
-final class CyclingIterator[A] private (values: Seq[A], private val position: Int):
-	def this(values: Seq[A]) = this(values.toVector, 0)
-
-	def next: (A, CyclingIterator[A]) =
-		val nextPos1 = position + 1
-		val nextPos = if nextPos1 >= values.length then 0 else nextPos1
-		(values(position), new CyclingIterator(values, nextPos))
-
-
 opaque type NodeLabel = String
 object NodeLabel:
 	inline def apply(s:String):NodeLabel = s
