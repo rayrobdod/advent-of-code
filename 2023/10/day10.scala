@@ -1,7 +1,7 @@
 //> using scala 3.3.1
 //> using dep com.lihaoyi::os-lib:0.9.2
 
-import scala.collection.mutable
+import scala.annotation.tailrec
 
 enum EvenOddFillRuleState:
 	case Outside
@@ -102,9 +102,20 @@ object PipeSection:
 			case '7' => SW
 			case 'F' => SE
 
-object Day10Part2:
+def pipeLength(start: Position, maze: Seq[Seq[PipeSection]]): Int =
+	@tailrec def rec(current: Position, count:Int):Int =
+		if current == start then
+			count
+		else
+			rec(current.next(maze), count + 1)
+
+	rec(start.next(maze), 1)
+
+/** where noise means those pipe sections that are not connected to the main loop */
+def mazeWithoutNoise(start: Position, maze: Seq[Seq[PipeSection]]): Seq[Seq[PipeSection]] =
 	/** Returns a grid, where each element indicates whether the cell is a part of the main pipe */
-	def isPartOfPipe(start: Position, maze: Seq[Seq[PipeSection]]): Seq[Seq[Boolean]] =
+	def isPartOfPipe: Seq[Seq[Boolean]] =
+		import scala.collection.mutable
 		val partOfPipe:Seq[mutable.Seq[Boolean]] =
 			maze.map(line => mutable.Seq.fill(line.length)(false))
 
@@ -116,7 +127,55 @@ object Day10Part2:
 
 		partOfPipe.map(_.to(Seq))
 
+	maze.zip(isPartOfPipe)
+		.map: (inputRow, partOfPipeRow) =>
+			inputRow.zip(partOfPipeRow)
+				.map: (inputElem, partOfPipeElem) =>
+					if partOfPipeElem then inputElem else PipeSection.Null
 
+def pipeArea(mazeWithoutNoise: Seq[Seq[PipeSection]]): Int =
+	mazeWithoutNoise
+		.map: row =>
+			row
+				.foldLeft((0, EvenOddFillRuleState.Outside)): (folding, pipeSection) =>
+					val (insideCount, fillRuleState) = folding
+					import PipeSection.*
+					import EvenOddFillRuleState.*
+					pipeSection match
+					case Null =>
+						(insideCount + (if fillRuleState == Inside then 1 else 0), fillRuleState)
+					case EW =>
+						(insideCount, fillRuleState)
+					case NS =>
+						(insideCount, (if fillRuleState == Inside then Outside else Inside))
+					case NE =>
+						(insideCount, (fillRuleState match
+							case Outside => BorderN
+							case Inside => BorderS
+							case x => throw new MatchError(x)
+						))
+					case SE =>
+						(insideCount, (fillRuleState match
+							case Outside => BorderS
+							case Inside => BorderN
+							case x => throw new MatchError(x)
+						))
+					case NW =>
+						(insideCount, (fillRuleState match
+							case BorderN => Outside
+							case BorderS => Inside
+							case x => throw new MatchError(x)
+						))
+					case SW =>
+						(insideCount, (fillRuleState match
+							case BorderN => Inside
+							case BorderS => Outside
+							case x => throw new MatchError(x)
+						))
+				._1
+		.sum
+
+object Day10:
 	def main(args:Array[String]):Unit =
 		import java.nio.file.*
 		val inputString = os.read.lines(os.pwd / "input.txt")
@@ -147,54 +206,5 @@ object Day10Part2:
 				else
 					PipeSection.fromChar(char)
 
-		val partOfPipe:Seq[Seq[Boolean]] = isPartOfPipe(start, input)
-
-		/* where noise means those pipe sections that are not connected to the main loop */
-		val inputWithoutNoise: Seq[Seq[PipeSection]] = input.zip(partOfPipe)
-			.map: (inputRow, partOfPipeRow) =>
-				inputRow.zip(partOfPipeRow)
-					.map: (inputElem, partOfPipeElem) =>
-						if partOfPipeElem then inputElem else PipeSection.Null
-
-		val count = inputWithoutNoise
-			.map: row =>
-				row
-					.foldLeft((0, EvenOddFillRuleState.Outside)): (folding, pipeSection) =>
-						val (insideCount, fillRuleState) = folding
-						import PipeSection.*
-						import EvenOddFillRuleState.*
-						pipeSection match
-						case Null =>
-							(insideCount + (if fillRuleState == Inside then 1 else 0), fillRuleState)
-						case EW =>
-							(insideCount, fillRuleState)
-						case NS =>
-							(insideCount, (if fillRuleState == Inside then Outside else Inside))
-						case NE =>
-							(insideCount, (fillRuleState match
-								case Outside => BorderN
-								case Inside => BorderS
-								case x => throw new MatchError(x)
-							))
-						case SE =>
-							(insideCount, (fillRuleState match
-								case Outside => BorderS
-								case Inside => BorderN
-								case x => throw new MatchError(x)
-							))
-						case NW =>
-							(insideCount, (fillRuleState match
-								case BorderN => Outside
-								case BorderS => Inside
-								case x => throw new MatchError(x)
-							))
-						case SW =>
-							(insideCount, (fillRuleState match
-								case BorderN => Inside
-								case BorderS => Outside
-								case x => throw new MatchError(x)
-							))
-					._1
-			.sum
-
-		System.out.println(count)
+		System.out.println(s"part 1: ${pipeLength(start, input) / 2}")
+		System.out.println(s"part 2: ${pipeArea(mazeWithoutNoise(start, input))}")
