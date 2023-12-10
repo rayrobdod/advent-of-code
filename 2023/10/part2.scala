@@ -54,21 +54,25 @@ enum PipeSection:
 					case NS => North
 					case SE => East
 					case SW => West
+					case x => throw new MatchError(x)
 			case South =>
 				this match
 					case NS => South
 					case NE => East
 					case NW => West
+					case x => throw new MatchError(x)
 			case East =>
 				this match
 					case EW => East
 					case NW => North
 					case SW => South
+					case x => throw new MatchError(x)
 			case West =>
 				this match
 					case EW => West
 					case NE => North
 					case SE => South
+					case x => throw new MatchError(x)
 
 /** represents being in the pipe section at `(x,y)` and facing in the `direction` direction */
 case class Position(x:Int, y:Int, direction:Direction):
@@ -166,21 +170,25 @@ object Day10Part2:
 							(insideCount, (fillRuleState match
 								case Outside => BorderN
 								case Inside => BorderS
+								case x => throw new MatchError(x)
 							))
 						case SE =>
 							(insideCount, (fillRuleState match
 								case Outside => BorderS
 								case Inside => BorderN
+								case x => throw new MatchError(x)
 							))
 						case NW =>
 							(insideCount, (fillRuleState match
 								case BorderN => Outside
 								case BorderS => Inside
+								case x => throw new MatchError(x)
 							))
 						case SW =>
 							(insideCount, (fillRuleState match
 								case BorderN => Inside
 								case BorderS => Outside
+								case x => throw new MatchError(x)
 							))
 					._1
 			.sum
