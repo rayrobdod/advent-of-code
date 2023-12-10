@@ -4,8 +4,29 @@
 enum Direction:
 	case North, East, West, South
 
+	def movement: (Int, Int) =
+		this match
+			case North => (0, -1)
+			case South => (0, 1)
+			case East => (1, 0)
+			case West => (-1, 0)
+
 enum PipeSection:
 	case Null, NS, EW, NE, NW, SE, SW
+
+	def connectsIn(d:Direction): Boolean =
+		import Direction.*
+		this match
+			case Null => false
+			case NS => d == North || d == South
+			case NE => d == North || d == East
+			case NW => d == North || d == West
+			case SE => d == South || d == East
+			case SW => d == South || d == West
+			case EW => d == East || d == West
+
+	def arbitraryConnection:Direction =
+		Direction.values.find(this.connectsIn).get
 
 	def exiting(entering: Direction): Direction =
 		import Direction.*
@@ -35,11 +56,7 @@ enum PipeSection:
 case class Position(x:Int, y:Int, direction:Direction):
 	def next(maze:Seq[Seq[PipeSection]]): Position =
 		import Direction.*
-		val (dx, dy) = direction match
-			case North => (0, -1)
-			case South => (0, 1)
-			case East => (1, 0)
-			case West => (-1, 0)
+		val (dx, dy) = direction.movement
 
 		val nextX = this.x + dx
 		val nextY = this.y + dy
@@ -60,19 +77,37 @@ object PipeSection:
 			case 'J' => NW
 			case '7' => SW
 			case 'F' => SE
-			// hardcoded
-			case 'S' => NE
 
 object Day10Part1:
 	def main(args:Array[String]):Unit =
 		import java.nio.file.*
 		val inputString = os.read.lines(os.pwd / "input.txt")
-		val start = {
+		val (start, startSection) = {
 			val startY = inputString.indexWhere(_.contains('S'))
 			val startX = inputString(startY).indexOf('S')
-			Position(startX, startY, Direction.North)
+
+			val northConnects = PipeSection.fromChar(inputString(startY - 1)(startX)).connectsIn(Direction.South)
+			val southConnects = PipeSection.fromChar(inputString(startY + 1)(startX)).connectsIn(Direction.North)
+			val westConnects = PipeSection.fromChar(inputString(startY)(startX - 1)).connectsIn(Direction.East)
+			val eastConnects = PipeSection.fromChar(inputString(startY)(startX + 1)).connectsIn(Direction.West)
+
+			val startSection = (northConnects, southConnects, westConnects, eastConnects) match
+				case (true, true, false, false) => PipeSection.NS
+				case (true, false, true, false) => PipeSection.NW
+				case (true, false, false, true) => PipeSection.NE
+				case (false, true, true, false) => PipeSection.SW
+				case (false, true, false, true) => PipeSection.SE
+				case (false, false, true, true) => PipeSection.EW
+				case _ => ???
+
+			(Position(startX, startY, startSection.arbitraryConnection), startSection)
 		}
-		val input = inputString.map(_.map(PipeSection.fromChar))
+		val input = inputString.map:
+			_.map: char =>
+				if 'S' == char then
+					startSection
+				else
+					PipeSection.fromChar(char)
 
 		var length: Int = 1
 		var position: Position = start.next(input)
