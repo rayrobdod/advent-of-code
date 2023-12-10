@@ -1,6 +1,8 @@
 //> using scala 3.3.1
 //> using dep com.lihaoyi::os-lib:0.9.2
 
+import scala.annotation.tailrec
+
 enum Direction:
 	case North, East, West, South
 
@@ -79,6 +81,15 @@ object PipeSection:
 			case 'F' => SE
 
 object Day10Part1:
+	def pipeLength(start: Position, maze: Seq[Seq[PipeSection]]): Int =
+		@tailrec def rec(current: Position, count:Int):Int =
+			if current == start then
+				count
+			else
+				rec(current.next(maze), count + 1)
+
+		rec(start.next(maze), 1)
+
 	def main(args:Array[String]):Unit =
 		import java.nio.file.*
 		val inputString = os.read.lines(os.pwd / "input.txt")
@@ -109,10 +120,6 @@ object Day10Part1:
 				else
 					PipeSection.fromChar(char)
 
-		var length: Int = 1
-		var position: Position = start.next(input)
-		while position != start do
-			length += 1
-			position = position.next(input)
+		val length = pipeLength(start, input)
 
 		System.out.println(length / 2)

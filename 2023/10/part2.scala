@@ -97,6 +97,19 @@ object PipeSection:
 			case 'F' => SE
 
 object Day10Part2:
+	def isPartOfPipe(start: Position, maze: Seq[Seq[PipeSection]]): Seq[Seq[Boolean]] =
+		val partOfPipe:Seq[mutable.Seq[Boolean]] =
+			maze.map(line => mutable.Seq.fill(line.length)(false))
+
+		partOfPipe(start.y)(start.x) = true
+		var position: Position = start.next(maze)
+		while position != start do
+			partOfPipe(position.y)(position.x) = true
+			position = position.next(maze)
+
+		partOfPipe.map(_.to(Seq))
+
+
 	def main(args:Array[String]):Unit =
 		import java.nio.file.*
 		val inputString = os.read.lines(os.pwd / "input.txt")
@@ -127,14 +140,7 @@ object Day10Part2:
 				else
 					PipeSection.fromChar(char)
 
-		val partOfPipe:Seq[mutable.Seq[Boolean]] =
-			input.map(line => mutable.Seq.fill(line.length)(false))
-
-		partOfPipe(start.y)(start.x) = true
-		var position: Position = start.next(input)
-		while position != start do
-			partOfPipe(position.y)(position.x) = true
-			position = position.next(input)
+		val partOfPipe:Seq[Seq[Boolean]] = isPartOfPipe(start, input)
 
 		val inputWithoutNoise: Seq[Seq[PipeSection]] = input.zip(partOfPipe)
 			.map: (inputRow, partOfPipeRow) =>
