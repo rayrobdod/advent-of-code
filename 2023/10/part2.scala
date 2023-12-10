@@ -4,9 +4,11 @@
 import scala.collection.mutable
 
 enum EvenOddFillRuleState:
-	case Outside, Inside
-	// BorderN means the north half is inside the shape and the south side is outside
-	case BorderN, BorderS
+	case Outside
+	case Inside
+	/** BorderN means the north side is inside the shape and the south side is outside */
+	case BorderN
+	case BorderS
 
 enum Direction:
 	case North, East, West, South
@@ -101,6 +103,7 @@ object PipeSection:
 			case 'F' => SE
 
 object Day10Part2:
+	/** Returns a grid, where each element indicates whether the cell is a part of the main pipe */
 	def isPartOfPipe(start: Position, maze: Seq[Seq[PipeSection]]): Seq[Seq[Boolean]] =
 		val partOfPipe:Seq[mutable.Seq[Boolean]] =
 			maze.map(line => mutable.Seq.fill(line.length)(false))
@@ -146,6 +149,7 @@ object Day10Part2:
 
 		val partOfPipe:Seq[Seq[Boolean]] = isPartOfPipe(start, input)
 
+		/* where noise means those pipe sections that are not connected to the main loop */
 		val inputWithoutNoise: Seq[Seq[PipeSection]] = input.zip(partOfPipe)
 			.map: (inputRow, partOfPipeRow) =>
 				inputRow.zip(partOfPipeRow)
