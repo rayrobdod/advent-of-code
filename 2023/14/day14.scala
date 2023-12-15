@@ -24,10 +24,10 @@ final class Grid(private val backing: Seq[Seq[TypeOfRock]]):
 		val canvas = backing.map:
 				_.to(mutable.Seq)
 
-		for (
+		for
 			y <- 0 until canvas.length;
 			x <- 0 until canvas(0).length
-		) do
+		do
 			if canvas(y)(x) == TypeOfRock.Round then
 				var z = y
 				while z >= 1 && canvas(z - 1)(x) == TypeOfRock.None do
@@ -43,10 +43,10 @@ final class Grid(private val backing: Seq[Seq[TypeOfRock]]):
 		val canvas = backing.map:
 				_.to(mutable.Seq)
 
-		for (
+		for
 			y <- (canvas.length - 1) to 0 by -1;
 			x <- (canvas(0).length - 1) to 0 by -1
-		) do
+		do
 			if canvas(y)(x) == TypeOfRock.Round then
 				var z = y
 				while z < (canvas.length - 1) && canvas(z + 1)(x) == TypeOfRock.None do
@@ -139,12 +139,11 @@ final class Grid(private val backing: Seq[Seq[TypeOfRock]]):
 object Day14Part1:
 	def main(args:Array[String]):Unit =
 		val input =
-			new Grid(
+			Grid:
 				os.read.lines(os.pwd / "input.txt")
 					.map: line =>
 						line.map:
 							TypeOfRock.fromChar
-			)
 
 		System.out.print("part 1: ")
 		System.out.println:
