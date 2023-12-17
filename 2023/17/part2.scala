@@ -40,11 +40,6 @@ enum Direction:
 			case Left | Right => Set(Up, Down)
 end Direction
 
-object Direction:
-	def all: Set[Direction] =
-		Set(Up, Left, Right, Down)
-end Direction
-
 class Grid[A](backing: Seq[Seq[A]]):
 	def apply(p: Point): A = backing(p.y)(p.x)
 
@@ -75,7 +70,7 @@ case class PathfindState(cost: Int, position: Point, previousMove: Direction, pr
 
 	def allowedNextMoves(minimumStraight: Int, maximumStraight: Int): Set[Direction] =
 		if 0 == previousMoveRepeat then
-			Direction.all
+			Direction.values.toSet
 		else if previousMoveRepeat < minimumStraight then
 			Set(previousMove)
 		else if previousMoveRepeat >= maximumStraight then
