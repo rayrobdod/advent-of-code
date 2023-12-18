@@ -1,7 +1,6 @@
 //> using scala 3.3.1
 //> using dep com.lihaoyi::os-lib:0.9.2
 
-import scala.annotation.tailrec
 import scala.collection.immutable.SortedSet
 
 case class Point(x: Int, y: Int):
@@ -25,7 +24,8 @@ object Direction:
 end Direction
 
 case class HorizontalTrenchLine(x:Int, minY: Int, maxY: Int):
-	if (maxY <= minY) throw new IllegalArgumentException(s"maxY ($maxY) < minY ($minY)")
+	if (maxY <= minY)
+		throw new IllegalArgumentException(s"maxY ($maxY) <= minY ($minY)")
 
 	def intersectsY(y: Int): Boolean =
 		minY <= y && y <= maxY
@@ -77,21 +77,33 @@ def digInterior(trenchLines: SortedSet[HorizontalTrenchLine]): Long =
 		.map: y =>
 			val relevantTrenchLines = trenchLines.filter(_.intersectsY(y))
 			relevantTrenchLines
-				.foldLeft(Outside, Seq.empty[(Int, Int)]): (folding, trench) =>
+				.foldLeft(Outside, List.empty[(Int, Int)]): (folding, trench) =>
 					val (fillState, segments) = folding
 					fillState match
-						case Outside if trench.minY == y => (DownInside(trench.x), segments)
-						case Outside if trench.maxY == y => (UpInside(trench.x), segments)
-						case Outside => (Inside(trench.x), segments)
-						case Inside(minX) if trench.minY == y => (UpInside(minX), segments)
-						case Inside(minX) if trench.maxY == y => (DownInside(minX), segments)
-						case Inside(minX) => (Outside, (minX, trench.x) +: segments)
-						case UpInside(minX) if trench.minY == y => (Inside(minX), segments)
-						case UpInside(minX) if trench.maxY == y => (Outside, (minX, trench.x) +: segments)
-						case UpInside(minX) => throw new AssertionError("")
-						case DownInside(minX) if trench.minY == y => (Outside, (minX, trench.x) +: segments)
-						case DownInside(minX) if trench.maxY == y => (Inside(minX), segments)
-						case DownInside(minX) => throw new AssertionError("")
+						case Outside if trench.minY == y =>
+							(DownInside(trench.x), segments)
+						case Outside if trench.maxY == y =>
+							(UpInside(trench.x), segments)
+						case Outside =>
+							(Inside(trench.x), segments)
+						case Inside(minX) if trench.minY == y =>
+							(UpInside(minX), segments)
+						case Inside(minX) if trench.maxY == y =>
+							(DownInside(minX), segments)
+						case Inside(minX) =>
+							(Outside, (minX, trench.x) :: segments)
+						case UpInside(minX) if trench.minY == y =>
+							(Inside(minX), segments)
+						case UpInside(minX) if trench.maxY == y =>
+							(Outside, (minX, trench.x) :: segments)
+						case UpInside(minX) =>
+							throw new AssertionError("")
+						case DownInside(minX) if trench.minY == y =>
+							(Outside, (minX, trench.x) :: segments)
+						case DownInside(minX) if trench.maxY == y =>
+							(Inside(minX), segments)
+						case DownInside(minX) =>
+							throw new AssertionError("")
 				._2
 				.map: (minX, maxX) =>
 					maxX - minX + 1L

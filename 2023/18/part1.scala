@@ -35,7 +35,7 @@ class Grid[A](backing: Seq[Seq[A]]) extends PartialFunction[Point, A]:
 	def isDefinedAt(p: Point): Boolean =
 		0 <= p.x && p.x < width && 0 <= p.y && p.y < height
 
-	def update(p: Point, newValue: A): Grid[A] =
+	def updated(p: Point, newValue: A): Grid[A] =
 		Grid:
 			backing.updated(p.y, backing(p.y).updated(p.x, newValue))
 
@@ -62,7 +62,7 @@ class Grid[A](backing: Seq[Seq[A]]) extends PartialFunction[Point, A]:
 				canvas
 			else
 				val one = toVisit.head
-				val nextCanvas = canvas(one) = true
+				val nextCanvas = canvas.updated(one, true)
 				val addingToVisit = Direction.values
 					.map: direction =>
 						one + direction.toUnitVector
@@ -103,7 +103,7 @@ def digTrench(instructions: Seq[InputLine]): Set[Point] =
 		._2
 end digTrench
 
-object Day17:
+object Day18Part1:
 	def main(args:Array[String]):Unit =
 		val input: Seq[InputLine] =
 			os.read.lines(os.pwd / "input.txt")
