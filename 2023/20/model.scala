@@ -30,6 +30,8 @@ type ModuleName = ModuleName.Type
 object ModuleName:
 	opaque type Type = String
 	inline def apply(s:String):ModuleName = s
+	inline def unapply(n:ModuleName):Some[String] = Some(n)
+end ModuleName
 
 case class Pulse(level: PulseLevel, from: ModuleName, sentTo: ModuleName)
 
