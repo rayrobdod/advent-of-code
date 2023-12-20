@@ -100,7 +100,7 @@ enum Comparison:
 			case > => left > right
 end Comparison
 
-case class Rule(category:Category, comparison:Comparison, value: Int, result: WorkflowName):
+class Rule(category:Category, comparison:Comparison, value: Int, val resultIfMatch: WorkflowName):
 	def matches(part: Part): Boolean =
 		comparison(part(category), value)
 
@@ -120,13 +120,13 @@ object WorkflowName:
 	val Initial: WorkflowName = "in"
 end WorkflowName
 
-case class Workflow(rules: Seq[Rule], orElse: WorkflowName):
+class Workflow(rules: Seq[Rule], orElse: WorkflowName):
 	def apply(part: Part): WorkflowName =
 		rules
 			.find:
 				_.matches(part)
 			.map:
-				_.result
+				_.resultIfMatch
 			.getOrElse:
 				orElse
 
@@ -138,7 +138,7 @@ case class Workflow(rules: Seq[Rule], orElse: WorkflowName):
 			.foldLeft((List.empty[(PartSet, WorkflowName)], parts)): (folding, rule) =>
 				val (splits, restOfParts) = folding
 				val (applied, nextRestOfParts) = rule.split(restOfParts)
-				((((applied, rule.result)) :: splits, nextRestOfParts))
+				((((applied, rule.resultIfMatch)) :: splits, nextRestOfParts))
 			.finish
 end Workflow
 
@@ -149,10 +149,10 @@ object Workflow:
 				val rulesSplit = rulesAll.split(',')
 				val orElse = rulesSplit.last
 				val rules = rulesSplit.init.map:
-					case s"$category<$value:$result" =>
-						Rule(Category.fromChar(category), Comparison.<, value.toInt, WorkflowName(result))
-					case s"$category>$value:$result" =>
-						Rule(Category.fromChar(category), Comparison.>, value.toInt, WorkflowName(result))
+					case s"$category<$value:$resultIfMatch" =>
+						Rule(Category.fromChar(category), Comparison.<, value.toInt, WorkflowName(resultIfMatch))
+					case s"$category>$value:$resultIfMatch" =>
+						Rule(Category.fromChar(category), Comparison.>, value.toInt, WorkflowName(resultIfMatch))
 				WorkflowName(name) -> Workflow(rules.toSeq, WorkflowName(orElse))
 end Workflow
 
