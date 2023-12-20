@@ -40,11 +40,6 @@ def pressButton1(modules: Seq[Module], checkRecvLow: Set[ModuleName]): (Seq[Modu
 	while waitingPulses.nonEmpty do
 		val (pulse, nextWaitingPulses) = waitingPulses.dequeue
 
-		//System.out.println(s"ENT: $pulse")
-		//System.out.println(s"     $nextWaitingPulses")
-		//System.out.println(s"     ${state.view.mapValues(_.typ).toMap}")
-		//new java.util.Scanner(System.in).nextLine()
-
 		if pulse.level == PulseLevel.Low && checkRecvLow.contains(pulse.sentTo) then
 			lowPulseWasSent = lowPulseWasSent + pulse.sentTo
 
@@ -95,14 +90,16 @@ object Day20Part2:
 		val modules = parseInput:
 			os.read.lines(os.pwd / "input.txt")
 
-		// assumes `&dr -> rx` and a set of `&nn -> dr` with no other `-> rx` or `-> dr` =
-		val moduleDrInputs	 = modules
-			.collectFirst:
-				case Module(ModuleName("dr"), _, ModuleType.Conjunction(inputs)) =>
-					inputs.keySet
-			.get
+		val Target = ModuleName("rx")
 
-		val parts = countUntilFirstLows(modules, moduleDrInputs)
+		// assumes `&dr -> rx` and a set of `&nn -> dr` with no other `-> rx` or `-> dr` =
+		val TargetInputInputs = modules
+			.collect:
+				case Module(_, dests, ModuleType.Conjunction(inputs)) if dests == Set(Target) =>
+					inputs.keySet
+			.reduce((_, _) => throw new Exception("more than one target input"))
+
+		val parts = countUntilFirstLows(modules, TargetInputInputs)
 		System.out.println(parts)
 		// all four values are prime.
 
