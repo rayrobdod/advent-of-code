@@ -68,6 +68,19 @@ class Grid[A](private val backing: Seq[Seq[A]]):
 				.map: (thisRow, otherRow) =>
 					thisRow.zip(otherRow)
 
+	def indexOf(a: A): Point =
+		val rowIndex = backing.indexWhere:
+			_.contains(a)
+		val row = backing(rowIndex)
+		val columnIndex = row.indexOf(a)
+		Point(columnIndex, rowIndex)
+
+	def count(f: A => Boolean): Long =
+		this.backing
+			.map: row =>
+				row.count(f)
+			.sum
+
 	def mkString: String =
 		backing.map(_.mkString).mkString("\n")
 
@@ -135,4 +148,14 @@ object Grid:
 			Seq.tabulate(height, width): (y, x) =>
 				fn(Point(x, y))
 	end tabulate
+
+	def fill[A](width: Int, height: Int)(fn: => A): Grid[A] =
+		Grid:
+			Seq.fill(height, width)(fn)
+	end fill
+
+	def fromStrings(strs: Seq[String]): Grid[Char] =
+		Grid:
+			strs.map: str =>
+				new scala.collection.immutable.WrappedString(str)
 end Grid
