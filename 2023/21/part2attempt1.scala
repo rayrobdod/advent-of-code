@@ -41,7 +41,7 @@ end possibleSpacesAfterSteps
  *   * traversable is true at all points in cardinal directions of start
  */
 def possibleSpacesAfterSteps2(traversable: Grid[Boolean], start: Point, steps: Int): Long =
-	val TABULATE_PARTS = true
+	val TABULATE_PARTS = false
 	val maxX = traversable.width - 1
 	val maxY = traversable.height - 1
 
@@ -197,7 +197,7 @@ object Day21:
 			possibleSpacesAfterSteps(plots, start, 64)
 
 		System.out.print("part 2: ")
-		System.out.println()
+		//System.out.println()
 
 		/*
 		System.out.println("")
@@ -237,7 +237,7 @@ object Day21:
 			System.out.println:
 				f"    (Exp) $_1%7d (Res) $_2%7d"
 		*/
-		//*
+		/*
 		locally:
 			val parallelUniverseGrid = Grid.tabulate(plots.width * 11, plots.height * 11): p =>
 				plots(Point(p.x % plots.width, p.y % plots.height))
@@ -250,11 +250,11 @@ object Day21:
 				val _2 = possibleSpacesAfterSteps2(plots, start, steps)
 				System.out.println:
 					f"    (Exp) $_1%7d (Res) $_2%7d"
-		//*/
+		*/
 
 
-		System.out.println()
+		//System.out.println()
 		val res = possibleSpacesAfterSteps2(plots, start, 26501365)
-		System.out.println()
+		//System.out.println()
 		System.out.println(res)
 
