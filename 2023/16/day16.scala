@@ -83,11 +83,11 @@ end possibleStarts
 
 object Day16:
 	def main(args:Array[String]):Unit =
-		val input = Grid:
-			os.read.lines(os.pwd / "input.txt")
-				.map: line =>
-					line.map:
-						Part.fromChar
+		val input =
+			Grid.fromStrings:
+				os.read.lines(os.pwd / "input.txt")
+			.map:
+				Part.fromChar
 
 		System.out.print("part 1: ")
 		System.out.println:

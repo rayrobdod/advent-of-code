@@ -59,11 +59,10 @@ end pathfind
 object Day17:
 	def main(args:Array[String]):Unit =
 		val input: Grid[Int] =
-			Grid:
+			Grid.fromStrings:
 				os.read.lines(os.pwd / "input.txt")
-					.map: line =>
-						line.map: c =>
-							(c - '0').intValue
+			.map: c =>
+				(c - '0').intValue
 
 		System.out.print("part 1: ")
 		System.out.println:
