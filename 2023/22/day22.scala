@@ -31,16 +31,17 @@ def fall(bricks:Seq[Brick]):Seq[Brick] =
 			pile :+ brick.moveDownBy(brick.end1.z - newZ1)
 end fall
 
-def countSafelyDisintegratable(bricks: Seq[Brick]): Int =
-	val supportPairs: Seq[(Int, Int)] =
-		bricks.zipWithIndex.flatMap: (topBrick, topIndex) =>
-			bricks.zipWithIndex
-				.filter: (bottomBrick, _) =>
-					bottomBrick.sharesAnyColumnWith(topBrick) &&
-						bottomBrick.end2.z + 1 == topBrick.end1.z
-				.map: (_, bottomIndex) =>
-					((bottomIndex, topIndex))
+def calcSupportPairs(fallenBricks: Seq[Brick]): Seq[(Int, Int)] =
+	fallenBricks.zipWithIndex.flatMap: (topBrick, topIndex) =>
+		fallenBricks.zipWithIndex
+			.filter: (bottomBrick, _) =>
+				bottomBrick.sharesAnyColumnWith(topBrick) &&
+					bottomBrick.end2.z + 1 == topBrick.end1.z
+			.map: (_, bottomIndex) =>
+				((bottomIndex, topIndex))
+end calcSupportPairs
 
+def countSafelyDisintegratable(numBricks: Int, supportPairs: Seq[(Int, Int)]): Int =
 	val cannotBeSafelyDisintegrated: Set[Int] =
 		supportPairs
 			.groupMap(_._2)(_._1)
@@ -48,23 +49,14 @@ def countSafelyDisintegratable(bricks: Seq[Brick]): Int =
 				case (_, Seq(x)) => x
 			.toSet
 
-	bricks.size - cannotBeSafelyDisintegrated.size
+	numBricks - cannotBeSafelyDisintegrated.size
 end countSafelyDisintegratable
 
-def countChainReaction(bricks: Seq[Brick]): Seq[Int] =
-	val supportPairs: Seq[(Int, Int)] =
-		bricks.zipWithIndex.flatMap: (topBrick, topIndex) =>
-			bricks.zipWithIndex
-				.filter: (bottomBrick, _) =>
-					bottomBrick.sharesAnyColumnWith(topBrick) &&
-						bottomBrick.end2.z + 1 == topBrick.end1.z
-				.map: (_, bottomIndex) =>
-					((bottomIndex, topIndex))
-
+def countChainReaction(numBricks: Int, supportPairs: Seq[(Int, Int)]): Seq[Int] =
 	val supporting = supportPairs.groupMap(_._1)(_._2).withDefaultValue(Seq.empty)
 	val supportedBy = supportPairs.groupMap(_._2)(_._1).view.mapValues(_.toSet).toMap.withDefaultValue(Set.empty)
 
-	(0 until bricks.length).map: firstToRemove =>
+	(0 until numBricks).map: firstToRemove =>
 		var queue: Queue[Int] = Queue(firstToRemove)
 		var destroyed: Set[Int] = Set.empty
 
@@ -87,12 +79,13 @@ object Day22:
 				case s"$x1,$y1,$z1~$x2,$y2,$z2" =>
 					Brick(Coord(x1.toInt, y1.toInt, z1.toInt), Coord(x2.toInt, y2.toInt, z2.toInt))
 
-		val fallen = fall(input)
+		val numBricks = input.length
+		val supportPairs = calcSupportPairs(fall(input))
 
 		print("part 1: ")
 		println:
-			countSafelyDisintegratable(fallen)
+			countSafelyDisintegratable(numBricks, supportPairs)
 
 		print("part 2: ")
 		println:
-			countChainReaction(fallen).sum
+			countChainReaction(numBricks, supportPairs).sum
