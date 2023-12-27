@@ -1,7 +1,9 @@
 //> using scala 3.3.1
 //> using dep com.lihaoyi::os-lib:0.9.2
+//> using file ../Grid.scala
 
 import scala.annotation.tailrec
+import name.rayrobdod.aoc.*
 
 enum EvenOddFillRuleState:
 	case Outside
@@ -9,16 +11,6 @@ enum EvenOddFillRuleState:
 	/** BorderN means the north side is inside the shape and the south side is outside */
 	case BorderN
 	case BorderS
-
-enum Direction:
-	case North, East, West, South
-
-	def movement: (Int, Int) =
-		this match
-			case North => (0, -1)
-			case South => (0, 1)
-			case East => (1, 0)
-			case West => (-1, 0)
 
 enum PipeSection:
 	case Null, NS, EW, NE, NW, SE, SW
@@ -38,12 +30,12 @@ enum PipeSection:
 		import Direction.*
 		this match
 			case Null => false
-			case NS => d == North || d == South
-			case NE => d == North || d == East
-			case NW => d == North || d == West
-			case SE => d == South || d == East
-			case SW => d == South || d == West
-			case EW => d == East || d == West
+			case NS => d == Up || d == Down
+			case NE => d == Up || d == Right
+			case NW => d == Up || d == Left
+			case SE => d == Down || d == Right
+			case SW => d == Down || d == Left
+			case EW => d == Right || d == Left
 
 	def arbitraryConnection:Direction =
 		Direction.values.find(this.connectsIn).get
@@ -51,36 +43,36 @@ enum PipeSection:
 	def exiting(entering: Direction): Direction =
 		import Direction.*
 		entering match
-			case North =>
+			case Up =>
 				this match
-					case NS => North
-					case SE => East
-					case SW => West
+					case NS => Up
+					case SE => Right
+					case SW => Left
 					case x => throw new MatchError(x)
-			case South =>
+			case Down =>
 				this match
-					case NS => South
-					case NE => East
-					case NW => West
+					case NS => Down
+					case NE => Right
+					case NW => Left
 					case x => throw new MatchError(x)
-			case East =>
+			case Right =>
 				this match
-					case EW => East
-					case NW => North
-					case SW => South
+					case EW => Right
+					case NW => Up
+					case SW => Down
 					case x => throw new MatchError(x)
-			case West =>
+			case Left =>
 				this match
-					case EW => West
-					case NE => North
-					case SE => South
+					case EW => Left
+					case NE => Up
+					case SE => Down
 					case x => throw new MatchError(x)
 
 /** represents being in the pipe section at `(x,y)` and facing in the `direction` direction */
 case class Position(x:Int, y:Int, direction:Direction):
 	def next(maze:Seq[Seq[PipeSection]]): Position =
 		import Direction.*
-		val (dx, dy) = direction.movement
+		val Vector(dx, dy) = direction.toUnitVector
 
 		val nextX = this.x + dx
 		val nextY = this.y + dy
@@ -183,10 +175,10 @@ object Day10:
 			val startY = inputString.indexWhere(_.contains('S'))
 			val startX = inputString(startY).indexOf('S')
 
-			val northConnects = PipeSection.fromChar(inputString(startY - 1)(startX)).connectsIn(Direction.South)
-			val southConnects = PipeSection.fromChar(inputString(startY + 1)(startX)).connectsIn(Direction.North)
-			val westConnects = PipeSection.fromChar(inputString(startY)(startX - 1)).connectsIn(Direction.East)
-			val eastConnects = PipeSection.fromChar(inputString(startY)(startX + 1)).connectsIn(Direction.West)
+			val northConnects = PipeSection.fromChar(inputString(startY - 1)(startX)).connectsIn(Direction.Down)
+			val southConnects = PipeSection.fromChar(inputString(startY + 1)(startX)).connectsIn(Direction.Up)
+			val westConnects = PipeSection.fromChar(inputString(startY)(startX - 1)).connectsIn(Direction.Right)
+			val eastConnects = PipeSection.fromChar(inputString(startY)(startX + 1)).connectsIn(Direction.Left)
 
 			val startSection = (northConnects, southConnects, westConnects, eastConnects) match
 				case (true, true, false, false) => PipeSection.NS
