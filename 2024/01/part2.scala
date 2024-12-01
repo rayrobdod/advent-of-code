@@ -1,20 +1,17 @@
 //> using scala 3.5.2
-
-import java.nio.file.*
+//> using dep com.lihaoyi::os-lib:0.11.3
 
 object Day1Part2:
 	def main(args: Array[String]):Unit =
-		val lefts: List[Int] =
-			Files.lines(Path.of("input.txt"))
-				.toArray(size => new Array[String](size))
-				.toList
+		val lines: Seq[String] = os.read.lines(os.pwd / "input.txt")
+
+		val lefts: Seq[Int] =
+			lines
 				.map:
 					line => line.take(5).toInt
 
 		val rights: Map[Int, Int] =
-			Files.lines(Path.of("input.txt"))
-				.toArray(size => new Array[String](size))
-				.toList
+			lines
 				.map:
 					line => line.takeRight(5).toInt
 				.groupBy({(x: Int) => x})
