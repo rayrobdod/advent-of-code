@@ -35,15 +35,19 @@ def dampenedReports(report: Seq[Int]): Seq[Seq[Int]] =
 	(0 until report.size).map: index =>
 		report.patch(index, Nil, 1)
 
-object Day2Part2:
+object Day2:
 	def main(args: Array[String]): Unit =
 		val lines: Seq[String] = os.read.lines(os.pwd / "input.txt")
 
 		val reports: Seq[Seq[Int]] = lines.map: line =>
 			line.split(" ").toIndexedSeq.map(_.toInt)
 
-		val result = reports.count: report =>
+		val part1 = reports.count(report => reportIsSafe(report))
+
+		System.out.println(s"part 1: ${part1}")
+
+		val part2 = reports.count: report =>
 			dampenedReports(report).exists: dampReport =>
 				reportIsSafe(dampReport)
 
-		System.out.println(s"part 1: ${result}")
+		System.out.println(s"part 2: ${part2}")
