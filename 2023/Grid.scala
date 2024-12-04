@@ -6,6 +6,7 @@ case class Vector(x: Int, y: Int):
 	def +(v: Point): Point = Point(this.x + v.x, this.y + v.y)
 	def -(v: Vector): Vector = Vector(this.x - v.x, this.y - v.y)
 	def -(v: Point): Point = Point(this.x - v.x, this.y - v.y)
+	def *(i: Int): Vector = Vector(this.x * i, this.y * i)
 end Vector
 
 case class Point(x: Int, y: Int):
