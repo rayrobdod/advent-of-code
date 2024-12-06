@@ -36,6 +36,13 @@ enum Direction:
 			case Up | Down => Set(Left, Right)
 			case Left | Right => Set(Up, Down)
 
+	def turnRight: Direction =
+		this match
+			case Up => Right
+			case Right => Down
+			case Down => Left
+			case Left => Up
+
 	def show: Char =
 		this match
 			case Up => '^'
@@ -52,6 +59,13 @@ class Grid[A](private val backing: Seq[Seq[A]]):
 
 	def isDefinedAt(p: Point): Boolean =
 		0 <= p.x && p.x < width && 0 <= p.y && p.y < height
+
+	def getOrElse(p: Point, default: A): A =
+		if this.isDefinedAt(p) then
+			this(p)
+		else
+			default
+	end getOrElse
 
 	def updated(p: Point, newValue: A): Grid[A] =
 		Grid:
@@ -81,6 +95,14 @@ class Grid[A](private val backing: Seq[Seq[A]]):
 			.map: row =>
 				row.count(f)
 			.sum
+
+	def indices: Seq[Point] =
+		for
+			y <- 0 until height;
+			x <- 0 until width
+		yield
+			Point(x, y)
+		end for
 
 	def mkString: String =
 		backing.map(_.mkString).mkString("\n")
