@@ -12,6 +12,7 @@ end Vector
 case class Point(x: Int, y: Int):
 	def +(v: Vector): Point = Point(this.x + v.x, this.y + v.y)
 	def -(v: Vector): Point = Point(this.x - v.x, this.y - v.y)
+	def -(v: Point): Vector = Vector(this.x - v.x, this.y - v.y)
 end Point
 
 enum Direction:
