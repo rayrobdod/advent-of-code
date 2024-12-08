@@ -4,55 +4,58 @@
 
 import name.rayrobdod.aoc.*
 
+val NOT_AN_ANTENNA = '.'
+
 val input_raw: Grid[Char] =
 	Grid.fromStrings(os.read.lines(os.pwd / "input.txt"))
 
-val input: Map[Char, Set[Point]] =
+// The Point is the location of an antenna.
+// The Vector is distance from that antenna to a resonant antenna.
+// The seq contains both directions for each antenna pair
+val input: Seq[(Point, Vector)] =
 	input_raw
 		.indices
 		.map: (p: Point) =>
 			(input_raw(p), p)
-		.filter(_._1 != '.')
+		.filterNot(_._1 == NOT_AN_ANTENNA)
 		.groupMapReduce
 			({ (k, _) => k })
 			({ (_, v) => Set(v) })
 			({ (v1, v2) => v1 ++ v2 })
+		// type of antenna -> set of points with that type of antenna
+		.map(_._2)
+		.toSeq
+		.flatMap[(Point, Vector)]: (resonantAntennas) =>
+			for
+				left <- resonantAntennas;
+				right <- resonantAntennas
+				if left != right
+			yield
+				(left, (right - left))
 
 val part1 = input
-	.flatMap[Point]: (k, vs) =>
-		for
-			left <- vs;
-			right <- vs
-			if left != right
-		yield
-			left - (right - left)
+	.map: (antenna, delta) =>
+		antenna + delta * 2
 	.filter(input_raw.isDefinedAt)
-	.to(scala.collection.immutable.HashSet)
+	.distinct
 	.size
 
 println(s"part 1: ${part1}")
 
-import scala.math.BigInt.int2bigInt
+import scala.math.BigInt.int2bigInt // gcd
 
 val part2 = input.toList
-	.flatMap[(Point, Vector)]: (k, vs) =>
-		for
-			left <- vs;
-			right <- vs
-			if left != right
-		yield
-			(left, (right - left))
-	.map: (p, v) =>
-		if v.x.gcd(v.y) != 1 then
-			throw new Exception(s"${v.x},${v.y}")
-		(p, v)
-	.flatMap: (p, v) =>
-		// the list at this point contains point-vector pairs for both directions,
+	.map: (antenna, delta) =>
+		if delta.x.gcd(delta.y) != 1 then
+			throw new Exception(s"${delta.x},${delta.y}")
+		(antenna, delta)
+	.flatMap: (antenna, delta) =>
+		// the list contains point-vector pairs for both directions,
 		// so this only has to concern itself with one direction
-		LazyList.unfold(p): p2 =>
-			val newP = p2 + v
+		LazyList.unfold(antenna): p =>
+			val newP = p + delta
 			Option.when(input_raw.isDefinedAt(newP))((newP, newP))
-	.to(scala.collection.immutable.HashSet)
+	.distinct
 	.size
 
 println(s"part 2: ${part2}")
