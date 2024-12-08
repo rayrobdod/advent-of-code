@@ -1,4 +1,11 @@
-.bsp/
-.scala-build/
 input.txt
 sample.txt
+build/
+
+# scala-cli
+.bsp/
+.scala-build/
+
+# rgbds
+*.gb
+*.sav
