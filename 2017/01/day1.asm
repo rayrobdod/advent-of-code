@@ -1,4 +1,4 @@
-	INCLUDE "lib/hardware.inc/hardware.inc"
+	INCLUDE "hardware.inc/hardware.inc"
 
 	; basically a debug print
 MACRO PRINT_REGISTER ; position, 16-bit register
@@ -200,70 +200,6 @@ Done:
 	halt
 	jr Done
 
-SECTION "Copy", ROM0, ALIGN[3]
-; hl - [in] pointer to target - [out] hl + bc
-; de - [in] pointer to source - [out] de + bc
-; bc - [in] number of bytes to copy - [out] 0
-Copy::
-	; 9 bytes; could fit in two rsts
-	ld a, [de]
-	ld [hl+], a
-	inc de
-	dec bc
-	ld a, b
-	or a, c
-	jr nz, Copy
-	ret
-
-SECTION "Print", ROM0
-; hl - the start of where to print to
-; de - value to print
-PrintHex_DE:
-	ASSERT(Digits & $0F == 0)
-	REPT 3
-	inc hl
-	ENDR
-
-	ld a, e
-	and a, $0F
-	or a, LOW(Digits)
-	ld b, HIGH(Digits)
-	ld c, a
-	ld a, [bc]
-	ld [hl-], a
-
-	ld a, e
-	and a, $F0
-	swap a
-	or a, LOW(Digits)
-	;ld b, HIGH(Digits)
-	ld c, a
-	ld a, [bc]
-	ld [hl-], a
-
-	ld a, d
-	and a, $0F
-	or a, LOW(Digits)
-	;ld b, HIGH(Digits)
-	ld c, a
-	ld a, [bc]
-	ld [hl-], a
-
-	ld a, d
-	and a, $F0
-	swap a
-	or a, LOW(Digits)
-	;ld b, HIGH(Digits)
-	ld c, a
-	ld a, [bc]
-	ld [hl], a
-
-	REPT 4
-	dec hl
-	ENDR
-
-	ret
-
 SECTION "Font", ROM0
 Font:
 	INCBIN "build/oldschool.2bpp"
@@ -281,7 +217,3 @@ Part1String:
 Part2String:
 	DB "Part 2: "
 .end
-
-Section "Digits", ROM0, ALIGN[4]
-Digits:
-	DB "0123456789ABCDEF"

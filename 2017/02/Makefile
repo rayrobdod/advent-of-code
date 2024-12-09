@@ -1,8 +1,8 @@
 .PHONY: all clean tidy tpp
 
 OBJ_DIR := build
-OBJ_NAMES := day1.o copy.o print.o
-ROM := day1.gb
+OBJ_NAMES := day2.o copy.o print.o parse.o compare_word.o
+ROM := day2.gb
 
 COMPILE_FLAGS := -Wunmapped-char=0 -Weverything -I build -I ../lib/include
 
@@ -16,7 +16,7 @@ include $(OBJ_DEPS)
 $(OBJ_DIR):
 	mkdir $@
 
-$(OBJ_DIR)/day1.d: $(OBJ_DIR)/oldschool.2bpp
+$(OBJ_DIR)/day2.d: $(OBJ_DIR)/oldschool.2bpp
 
 $(OBJ_DIR)/%.d: %.asm | $(OBJ_DIR)
 	rgbasm $(COMPILE_FLAGS) -M "$@" -MP -MQ "$@" -MQ "$(@:%.d=%.o)" $<

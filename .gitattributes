@@ -1,3 +1,4 @@
 *.asm	text		filter=remove_trailing_whitespace
+*.inc	text		filter=remove_trailing_whitespace
 *.scala	text	diff=scala	filter=remove_trailing_whitespace
 /.gitattributes	text		filter=sort
