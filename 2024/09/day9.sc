@@ -5,14 +5,6 @@
 import scala.annotation.nowarn
 import scala.annotation.tailrec
 
-extension [A](self: Vector[A])
-	def removed(index: Int): Vector[A] =
-		val (prefix, suffix) = self.splitAt(index)
-		prefix :++ suffix.tail
-	def inserted(index: Int, value: A): Vector[A] =
-		val (prefix, suffix) = self.splitAt(index)
-		prefix :+ value :++ suffix
-
 final case class DiskMapEntry(fileLength: Int, fileId: Int, freeLength: Int)
 
 object DiskMapEmpty:
@@ -182,9 +174,9 @@ locally:
 
 						diskMap
 							.updated(fileIndex - 1, newPrior)
-							.removed(fileIndex)
+							.patch(fileIndex, Seq.empty, 1)
 							.updated(freeIndex, newFree)
-							.inserted(freeIndex + 1, newFile)
+							.patch(freeIndex + 1, Seq(newFile), 0)
 					end if
 
 				if inputFilesystemSize != filesystemSize(newDiskMap) then
