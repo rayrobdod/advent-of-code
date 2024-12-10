@@ -91,6 +91,16 @@ class Grid[A](private val backing: Seq[Seq[A]]):
 		val columnIndex = row.indexOf(a)
 		Point(columnIndex, rowIndex)
 
+	def indicesWhere(f: A => Boolean): Seq[Point] =
+		for
+			y <- 0 until height;
+			x <- 0 until width;
+			p = Point(x, y)
+			if f(this(p))
+		yield
+			p
+		end for
+
 	def count(f: A => Boolean): Long =
 		this.backing
 			.map: row =>
@@ -111,6 +121,21 @@ class Grid[A](private val backing: Seq[Seq[A]]):
 	def mkString(sep: String): String =
 		backing.map(_.mkString(sep)).mkString("\n")
 
+	/**
+	 * Traverse the graph
+	 *
+	 * @param start where to start exploring from
+	 * @param priority highest priority gets checked first.
+	 *	Think the A* heuristic
+	 *	If order does not matter, `scala.math.Ordering.fromLessThan((_, _) => true),` is acceptable
+	 * @param toSeen Convert state from the form useful for the not-yet-visited queue to a form useful for the has-been-visited set
+	 * @param continue if false, short circuit.
+	 * @param allowedNextMoves Which nodes are able to be visited next from the current node
+	 * @param updatedState The state added to the queue, given
+	 *	(the prior position, the prior queued state, the new position, the direction of the move, and the value at the new position)
+	 * @return _1: the point in which traversing was stopped (if the traversal queue did not run out)
+	 *	_2: Every point that has been seen so far
+	 */
 	def explore[QueuedState, SeenState](
 		start: (Point, QueuedState),
 		priority: scala.math.Ordering[(Point, QueuedState)],
