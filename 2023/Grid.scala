@@ -68,6 +68,9 @@ class Grid[A](private val backing: Seq[Seq[A]]):
 			default
 	end getOrElse
 
+	def get(p: Point): Option[A] =
+		Option.when(this.isDefinedAt(p))(this(p))
+
 	def updated(p: Point, newValue: A): Grid[A] =
 		Grid:
 			backing.updated(p.y, backing(p.y).updated(p.x, newValue))
