@@ -15,6 +15,10 @@ case class Point(x: Int, y: Int):
 	def -(v: Point): Vector = Vector(this.x - v.x, this.y - v.y)
 end Point
 
+object Point:
+	def zero: Point = Point(0, 0)
+end Point
+
 enum Direction:
 	case Up, Down, Left, Right
 
