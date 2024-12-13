@@ -3,16 +3,17 @@
 
 final case class Vector(x: Long, y: Long):
 	def unary_- : Vector = Vector(-x, -y)
-	def +(v: Vector): Vector = Vector(this.x + v.x, this.y + v.y)
-	def -(v: Vector): Vector = Vector(this.x - v.x, this.y - v.y)
+	def +(other: Vector): Vector = Vector(this.x + other.x, this.y + other.y)
+	def -(other: Vector): Vector = Vector(this.x - other.x, this.y - other.y)
 	def *(i: Long): Vector = Vector(this.x * i, this.y * i)
 end Vector
 
 final case class Rational(num: Long, denom: Long):
 	def unary_- : Rational = Rational(-num, denom)
-	def +(f: Rational): Rational = Rational(this.num * f.denom + f.num * this.denom, this.denom * f.denom)
-	def -(f: Rational): Rational = this + (-f)
-	def /(f: Rational): Rational = Rational(this.num * f.denom, f.num * this.denom)
+	def +(other: Rational): Rational = Rational(this.num * other.denom + other.num * this.denom, this.denom * other.denom)
+	def -(other: Rational): Rational = this + (-other)
+	def /(other: Rational): Rational = Rational(this.num * other.denom, other.num * this.denom)
+	/** Returns the value of this rational if this rational can be represented as a Long */
 	def toLongOption: Option[Long] = Option.when(0 != denom && 0 == num % denom)(num / denom)
 end Rational
 
@@ -37,19 +38,17 @@ final case class ClawMachine(
 	end pressWinPossibilities1
 
 	def pressWinPossibilities2: Option[ButtonPresses] =
-		// experimentation shows that part 1 has only one possible button press solution per machine
+		// experimentation shows that part 1 has no more than one possible button press solution per machine
 		// lets assume the same holds for part 2
 
+		// `ax * a + bx * b = px` and `ay * a + by * b = py`; solve for `b`
 		val bPresses = ((Rational(prize.y, buttonA.y) - Rational(prize.x, buttonA.x))
 				/ (Rational(buttonB.y, buttonA.y) - Rational(buttonB.x, buttonA.x)))
-
-		val aPresses = bPresses.toLongOption
-			.flatMap: bPresses2 =>
-				Rational(prize.x - buttonB.x * bPresses2, buttonA.x).toLongOption
+					.toLongOption
 
 		for
-			a <- aPresses;
-			b <- bPresses.toLongOption
+			b <- bPresses;
+			a <- Rational(prize.x - buttonB.x * b, buttonA.x).toLongOption
 		yield
 			ButtonPresses(a, b)
 	end pressWinPossibilities2
@@ -97,7 +96,6 @@ val part1v2 = clawMachines
 		cm.pressWinPossibilities2
 			.map:
 				_.cost
-			.minOption
 			.getOrElse(0L)
 	.sum
 
@@ -108,7 +106,6 @@ val part2 = clawMachines2
 		cm.pressWinPossibilities2
 			.map:
 				_.cost
-			.minOption
 			.getOrElse(0L)
 	.sum
 
