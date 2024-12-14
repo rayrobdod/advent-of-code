@@ -64,7 +64,9 @@ val part1 = robots
 
 println(s"part 1: ${part1}")
 
-val part2 = (0 to 10000).filter: n =>
+// x repeats on an areaWidth cycle, y repeats on an areaHeight cycle
+// (x,y) repeats on a lcm(x, y) cycle, which since 101 and 103 are coprime, is x * y
+val part2 = (0 until areaWidth * areaHeight).filter: n =>
 	val ps = robots.map(_.pAt(n)).toSet
 	ps.exists: p =>
 		(1 to 4).forall: dx =>
