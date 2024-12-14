@@ -62,17 +62,28 @@ val part1 = robots
 		robotsInQuadrant.size
 	.product
 
-/*
-(0 until areaHeight).foreach: y =>
-	(0 until areaWidth).foreach: x =>
-		val p = WrappingVector(x, y)
-		val cnt = part1.count(_ == p)
-		print(if (0 == cnt) '.' else cnt)
-	println
-*/
-
 println(s"part 1: ${part1}")
 
-val part2 = null
+val part2 = (0 to 10000).filter: n =>
+	val ps = robots.map(_.pAt(n)).toSet
+	ps.exists: p =>
+		(1 to 4).forall: dx =>
+			Seq(-dx, dx).forall: dy =>
+				ps.contains(p + WrappingVector(dx, dy))
+		/*
+		(-2 to 2).forall: dx =>
+			(-2 to 2).forall: dy =>
+				ps.contains(p + WrappingVector(dx, dy))
+		*/
+
+part2.foreach: n =>
+	val rs = robots.map(_.pAt(n))
+	(0 until areaHeight).foreach: y =>
+		(0 until areaWidth).foreach: x =>
+			val p = WrappingVector(x, y)
+			val cnt = rs.count(_ == p)
+			print(if (0 == cnt) '.' else cnt)
+		println
+	println
 
 println(s"part 2: ${part2}")
