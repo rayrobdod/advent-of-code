@@ -30,7 +30,7 @@ object Opcode:
 		case _ => throw new IllegalArgumentException
 
 	object _dv:
-		def unapply(x: Opcode): Option[(Registers, Int) => Registers] =
+		def unapply(x: Opcode): Option[(Registers, Long) => Registers] =
 			x match
 				case Adv => Some((r, i) => r.copy(a = i))
 				case Bdv => Some((r, i) => r.copy(b = i))
@@ -41,7 +41,7 @@ end Opcode
 enum ComboOperand:
 	case _0, _1, _2, _3, _A, _B, _C
 
-	def value(regs: Registers): Int =
+	def value(regs: Registers): Long =
 		this match
 			case `_0` => 0
 			case `_1` => 1
@@ -65,7 +65,7 @@ object ComboOperand:
 		case _ => throw new IllegalArgumentException
 end ComboOperand
 
-final case class Registers(a: Int, b: Int, c: Int, pc: Int)
+final case class Registers(a: Long, b: Long, c: Long, pc: Int)
 
 object I:
 	def unapply(x:String):Option[Int] = x.toIntOption
@@ -107,7 +107,7 @@ def executeProgram(initialRegs: Registers, program: Seq[Int]): Seq[Int] =
 					val newRegs = regs.copy(pc = newPc)
 					impl(newRegs, output)
 				case Opcode.Out =>
-					val newOutput = ComboOperand.fromInt(program(regs.pc + 1)).value(regs) % 8
+					val newOutput = (ComboOperand.fromInt(program(regs.pc + 1)).value(regs) % 8).toInt
 					val newRegs = regs.copy(pc = regs.pc + 2)
 					impl(newRegs, newOutput :: output)
 		else
@@ -121,14 +121,47 @@ val part1 = executeProgram(initialRegs, program).mkString(",")
 
 println(s"part 1: $part1")
 
-var initialA = -1
-while
-	initialA += 1
-	if initialA % 10000 == 0 then
-		println(initialA)
-	val initialRegsWithA = initialRegs.copy(a = initialA)
-	val result = executeProgram(initialRegsWithA, program)
-	result != program
-do ()
+// I ended up transpiling my input program to figure out the following properties:
 
-println(s"part 2: $initialA")
+// The input program contains only one jump, a `Jnz 0` at the end of the program.
+// Each loop of the input program only modifies A with a single `Adv 8`.
+// Each loop prints exactly one time
+// B and C's state at the end of one loop does not affect the next loop.
+
+// It might be possible to write findQuine in terms of the interpreter if those properties can be assumed,
+// but I had already transpiled to figure out these properties,
+// and I only have to figure out the answer for my input
+// so I was lazy and plugged the transpiled version into findQuine
+
+def executeProgram2(initialA: Long): Seq[Int] =
+	@tailrec def impl(a:Long, out: List[Int]): List[Int] =
+		if a == 0 then
+			out
+		else
+			var b: Int = (a % 8).toInt
+			b ^= 3
+			val c: Int = ((a / (1 << b)) % 8).toInt
+			b ^= 5
+			b ^= c
+			impl(a / 8, b.toInt :: out)
+
+	impl(initialA, Nil).reverse
+end executeProgram2
+
+def findQuine: Seq[Long] =
+	program
+		.foldRight(Seq(0L)): (output, as) =>
+			as.flatMap: a =>
+				val bs = (0 until 8).filter: b2 =>
+					val preA = (a * 8) + b2
+
+					var b: Int = b2
+					b ^= 3
+					val c: Int = ((preA / (1 << b)) % 8).toInt
+					b ^= 5
+					b ^= c
+					b == output
+				bs.map(b => a * 8 + b)
+end findQuine
+
+println(s"part 2: ${findQuine.min}")
