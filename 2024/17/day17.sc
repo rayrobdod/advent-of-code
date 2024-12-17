@@ -6,7 +6,7 @@ import scala.annotation.tailrec
 val inputFile = os.pwd / "input.txt"
 
 enum Opcode:
-	case Adv //  A / 2^V -> A
+	case Adv // A / 2^V -> A
 	case Bxl // B xor L -> B
 	case Bst // (V % 8) -> B
 	case Jnz // if A != 0 then L -> PC
@@ -17,7 +17,6 @@ enum Opcode:
 end Opcode
 
 object Opcode:
-	// There *is* a way to use Mirror to do this...
 	def fromInt(x: Int): Opcode = x match
 		case 0 => Adv
 		case 1 => Bxl
@@ -53,7 +52,6 @@ enum ComboOperand:
 end ComboOperand
 
 object ComboOperand:
-	// There *is* a way to use Mirror to do this...
 	def fromInt(x: Int): ComboOperand = x match
 		case 0 => _0
 		case 1 => _1
@@ -119,7 +117,7 @@ end executeProgram
 
 val part1 = executeProgram(initialRegs, program).mkString(",")
 
-println(s"part 1: $part1")
+println(s"part 1 interpreted: $part1")
 
 // I ended up transpiling my input program to figure out the following properties:
 
@@ -148,6 +146,8 @@ def executeProgram2(initialA: Long): Seq[Int] =
 	impl(initialA, Nil).reverse
 end executeProgram2
 
+println(s"part 1    compiled: ${executeProgram2(initialRegs.a).mkString(",")}")
+
 def findQuine: Seq[Long] =
 	program
 		.foldRight(Seq(0L)): (output, as) =>
@@ -164,4 +164,27 @@ def findQuine: Seq[Long] =
 				bs.map(b => a * 8 + b)
 end findQuine
 
-println(s"part 2: ${findQuine.min}")
+println(s"part 2    compiled: ${findQuine.minOption.getOrElse("N/A")}")
+
+def findQuine2: Seq[Long] =
+	if program.takeRight(2) != Seq(3, 0) then
+		throw new Exception("Requires last instruction to be a JNZ 0")
+	if program.grouped(2).count(_(0) == 3) > 1 then
+		throw new Exception("Requires last instruction to be the only JNZ")
+	if program.grouped(2).count(_(0) == 0) != 1 then
+		throw new Exception("Requires program to have exactly one ADV")
+	if program.grouped(2).filter(_(0) == 0).count(_(1) != 3) != 0 then
+		throw new Exception("Requires program to have no ADV other than ADV 8")
+
+	program
+		.foldRight(Seq(0L)): (output, as) =>
+			as.flatMap: a =>
+				val bs = (0 until 8).filter: b2 =>
+					val preA = (a * 8) + b2
+
+					val outs = executeProgram(Registers(preA, 0, 0, 0), program.dropRight(2))
+					Seq(output) == outs
+				bs.map(b => a * 8 + b)
+end findQuine2
+
+println(s"part 2 interpreted: ${findQuine2.min}")
