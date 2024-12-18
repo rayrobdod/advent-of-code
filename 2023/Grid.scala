@@ -41,6 +41,13 @@ enum Direction:
 			case Up | Down => Set(Left, Right)
 			case Left | Right => Set(Up, Down)
 
+	def turnLeft: Direction =
+		this match
+			case Up => Left
+			case Right => Up
+			case Down => Right
+			case Left => Down
+
 	def turnRight: Direction =
 		this match
 			case Up => Right
