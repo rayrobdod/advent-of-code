@@ -25,36 +25,36 @@ val part1 = desireds
 println(s"part 1 v1: $part1")
 
 sealed trait Trie:
-	def value: Long
+	def nilOccurance: Long
 	def w: Trie
 	def u: Trie
 	def b: Trie
 	def r: Trie
 	def g: Trie
 
-	def getTrie(c: Char): Trie =
+	def descend(c: Char): Trie =
 		c match
 			case 'w' => this.w
 			case 'u' => this.u
 			case 'b' => this.b
 			case 'r' => this.r
 			case 'g' => this.g
-	end getTrie
+	end descend
 
 	private def copy(
-		value: Long = this.value,
+		nilOccurance: Long = this.nilOccurance,
 		w: Trie = this.w,
 		u: Trie = this.u,
 		b: Trie = this.b,
 		r: Trie = this.r,
 		g: Trie = this.g,
 	): Trie =
-		Trie.Node(value, w, u, b, r, g)
+		Trie.Node(nilOccurance, w, u, b, r, g)
 
 
 	def +(elem: String): Trie =
 		if "" == elem then
-			this.copy(value = this.value + 1)
+			this.copy(nilOccurance = this.nilOccurance + 1)
 		else
 			elem.charAt(0) match
 				case 'w' => this.copy(w = this.w + elem.substring(1))
@@ -66,16 +66,16 @@ sealed trait Trie:
 
 	def apply(elem: String): Long =
 		if "" == elem then
-			value
+			nilOccurance
 		else
-			getTrie(elem.charAt(0)).apply(elem.substring(1))
+			descend(elem.charAt(0)).apply(elem.substring(1))
 	end apply
 
 	def isEmpty: Boolean
 
 	def nonEmpty: Boolean = ! this.isEmpty
 
-	def map(fn: Long => Long): Trie
+	def multiplyOccurances(factor: Long): Trie
 
 	def |+|(other: Trie): Trie =
 		if this.isEmpty then
@@ -84,7 +84,7 @@ sealed trait Trie:
 			this
 		else
 			Trie.Node(
-				this.value + other.value,
+				this.nilOccurance + other.nilOccurance,
 				this.w |+| other.w,
 				this.u |+| other.u,
 				this.b |+| other.b,
@@ -93,11 +93,11 @@ sealed trait Trie:
 			)
 	end |+|
 
-	protected def addString1(current: String, b: StringBuilder, mid: String): b.type =
-		if 0 != this.value then
+	private def addString1(current: String, b: StringBuilder, mid: String): b.type =
+		if 0 != this.nilOccurance then
 			b.append(current)
 			b.append(" -> ")
-			b.append(this.value)
+			b.append(this.nilOccurance)
 			b.append(mid)
 		this.w.addString1(current + 'w', b, mid)
 		this.u.addString1(current + 'u', b, mid)
@@ -115,35 +115,37 @@ sealed trait Trie:
 		sb.toString
 	end mkString
 
-	override def toString: String = this.mkString(s"${scala.io.AnsiColor.RED}Trie${scala.io.AnsiColor.RESET}(", ", ", ")")
+	override def toString: String = this.mkString(s"Trie(", ", ", ")")
 end Trie
 
 object Trie:
-	final class Node(val value: Long, val w: Trie, val u: Trie, val b: Trie, val r: Trie, val g: Trie) extends Trie:
-		override def map(fn: Long => Long): Trie =
-			Node(
-				fn(this.value),
-				this.w.map(fn),
-				this.u.map(fn),
-				this.b.map(fn),
-				this.r.map(fn),
-				this.g.map(fn),
-			)
+	final class Node(val nilOccurance: Long, val w: Trie, val u: Trie, val b: Trie, val r: Trie, val g: Trie) extends Trie:
+		override def multiplyOccurances(factor: Long): Trie =
+			if 0 == factor then
+				Trie.empty
+			else
+				Node(
+					this.nilOccurance * factor,
+					this.w.multiplyOccurances(factor),
+					this.u.multiplyOccurances(factor),
+					this.b.multiplyOccurances(factor),
+					this.r.multiplyOccurances(factor),
+					this.g.multiplyOccurances(factor),
+				)
 
-		override lazy val isEmpty: Boolean = 0 == value && w.isEmpty && u.isEmpty && b.isEmpty && r.isEmpty && g.isEmpty
+		override lazy val isEmpty: Boolean = 0 == nilOccurance && w.isEmpty && u.isEmpty && b.isEmpty && r.isEmpty && g.isEmpty
 	end Node
 
+	/** Null Object */
 	private object _empty extends Trie:
-		def value: Long = 0
+		def nilOccurance: Long = 0
 		def w: Trie = _empty
 		def u: Trie = _empty
 		def b: Trie = _empty
 		def r: Trie = _empty
 		def g: Trie = _empty
 
-		override def map(fn: Long => Long): Trie = this
-
-		override def addString1(current: String, b: StringBuilder, mid: String): b.type = b
+		override def multiplyOccurances(factor: Long): Trie = this
 		override def isEmpty: Boolean = true
 		override def toString: String = "Trie.empty"
 	end _empty
@@ -161,17 +163,14 @@ val part2 = desireds
 	.map: desired =>
 		def impl(remainingDesired: String, remainingAvaliable: Trie): Long =
 			if "" == remainingDesired then
-				remainingAvaliable.value
+				remainingAvaliable.nilOccurance
 			else
 				val head = remainingDesired.charAt(0)
 				val tail = remainingDesired.substring(1)
 
 				val nextAvaliable =
-						val x = remainingAvaliable.getTrie(head)
-						if (0 != x.value) then
-							x |+| avaliables2.map(_ * x.value)
-						else
-							x
+						val x = remainingAvaliable.descend(head)
+						x |+| avaliables2.multiplyOccurances(x.nilOccurance)
 
 				impl(tail, nextAvaliable)
 			end if
