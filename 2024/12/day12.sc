@@ -16,10 +16,10 @@ val regions: Seq[Set[Point]] = locally:
 			if ! seen.contains(p) then
 				val cropType = input(p)
 				// flood-fill
-				val region = input.explore[Unit, Unit](
+				val region = input.explore[Unit, Unit, Unit](
 					start = (p, ()),
 					priority = scala.math.Ordering.fromLessThan((_, _) => true),
-					toSeen = u => u,
+					toSeen = u => (u, u),
 					continue = (_, _) => true,
 					allowedNextMoves = (p, _) =>
 						Direction.values
@@ -29,7 +29,7 @@ val regions: Seq[Set[Point]] = locally:
 							.toSet
 						,
 					updatedState = (_, _, _, _, _) => (),
-				)._2.map(_._1)
+				)._2.keySet.map(_._1)
 				seen ++= region
 				builder += region
 			end if

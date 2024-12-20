@@ -50,16 +50,17 @@ object Part:
 end Part
 
 def energized(initial: (Point, Direction), contraption: Grid[Part]): Int =
-	val (_, seen) = contraption.explore[Direction, Direction](
+	val (_, seen) = contraption.explore[Direction, Direction, Unit](
 		initial,
 		(_, _) => 0,
-		Predef.identity,
+		d => (d, ()),
 		(_, _) => true,
 		(point, direction) => contraption(point).directionChange(direction),
 		(_, _, _, direction, _) => direction,
 	)
 
 	seen
+		.keySet
 		.map(_._1)
 		// still a set, so is still distinct
 		.size

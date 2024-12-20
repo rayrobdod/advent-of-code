@@ -15,10 +15,10 @@ val fallingBlocks: Seq[Point] =
 		case s"${I(x)},${I(y)}" => Point(x,y)
 
 def myExplore(grid: Grid[Boolean]): Option[Int] =
-	grid.explore[Int, Unit](
+	grid.explore[Int, Unit, Unit](
 		start = (Point(0, 0), 0),
 		priority = scala.math.Ordering.by[(Point, Int), Int](- _._2),
-		toSeen = _ => (),
+		toSeen = _ => ((), ()),
 		continue = (p, _) => p != Point(70, 70),
 		allowedNextMoves =
 			case (p, _) =>

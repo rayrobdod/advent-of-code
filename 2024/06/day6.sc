@@ -13,10 +13,10 @@ val input: Grid[Boolean] = input_raw.map:
 
 extension (self: Grid[Boolean])
 	def exploreAsGuard: (Option[(Point, Direction)], Set[(Point, Direction)]) =
-		self.explore[Direction, Direction](
+		val rawResult = self.explore[Direction, Direction, Unit](
 			start = (startPosition, startDirection),
 			priority = scala.math.Ordering.fromLessThan({(_, _) => true}),
-			toSeen = d => d,
+			toSeen = d => (d, ()),
 			continue = {(p, d) => self.isDefinedAt(p + d.toUnitVector)},
 			allowedNextMoves = {(p, d) =>
 				if self.getOrElse(p + d.toUnitVector, true) then
@@ -37,6 +37,7 @@ extension (self: Grid[Boolean])
 			},
 			updatedState = (_, _, _, d, _) => d,
 		)
+		(rawResult._1, rawResult._2.keySet)
 
 val inputExploration = input.exploreAsGuard
 

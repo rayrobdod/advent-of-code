@@ -6,11 +6,11 @@ import scala.collection.mutable
 import name.rayrobdod.aoc.*
 
 case class PathfindState(cost: Int, previousMove: Direction, previousMoveRepeat: Int):
-	def toSeen: PathfindSeen =
+	def toSeen: (PathfindSeen, Unit) =
 		PathfindSeen(
 			this.previousMove,
 			this.previousMoveRepeat,
-		)
+		) -> ()
 
 	def allowedNextMoves(minimumStraight: Int, maximumStraight: Int): Set[Direction] =
 		if 0 == previousMoveRepeat then

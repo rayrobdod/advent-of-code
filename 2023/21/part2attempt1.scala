@@ -93,10 +93,10 @@ def possibleSpacesAfterSteps2(traversable: Grid[Boolean], start: Point, steps: I
 				val floodFilled = Grid.tabulate(traversable.width, traversable.height):
 					Grid
 						.fill(traversable.width, traversable.height)(false)
-						.explore[Unit, Unit](
+						.explore[Unit, Unit, Unit](
 							start -> (),
 							(_, _) => 0,
-							Predef.identity,
+							u => (u, u),
 							(_, _) => true,
 							(p, _) => Direction.values.toSet.filter: dir =>
 								val dest = p + dir.toUnitVector
@@ -105,6 +105,7 @@ def possibleSpacesAfterSteps2(traversable: Grid[Boolean], start: Point, steps: I
 							(_, _, _, _, _) => (),
 						)
 						._2
+						.keySet
 						.map(_._1)
 
 

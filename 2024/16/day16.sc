@@ -18,7 +18,7 @@ val (start: Point, end: Point, maze: Grid[Boolean]) =
 		case _ => true
 	(start, end, maze)
 
-val part1Exploration = maze.explore[(Direction, Int), Unit](
+val part1Exploration = maze.explore[(Direction, Int), Unit, Unit](
 	start = (start, (Direction.Right, 0)),
 	priority = {
 		scala.math.Ordering.by[(Point, (Direction, Int)), Int](x =>
@@ -26,7 +26,7 @@ val part1Exploration = maze.explore[(Direction, Int), Unit](
 			-(score)
 		)
 	},
-	toSeen = _ => (),
+	toSeen = _ => ((), ()),
 	continue = (p, _) => p != end,
 	allowedNextMoves =
 		case (p, (prevDirection, _)) =>

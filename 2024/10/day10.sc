@@ -11,10 +11,10 @@ val input: Grid[Int] =
 val part1 = input
 	.indicesWhere(0 == _)
 	.map: startPoint =>
-		input.explore[Unit, Unit](
+		input.explore[Unit, Unit, Unit](
 			start = (startPoint, ()),
 			priority = scala.math.Ordering.fromLessThan((_, _) => true),
-			toSeen = u => u,
+			toSeen = u => (u, u),
 			continue = (_, _) => true,
 			allowedNextMoves = (currentPos, _) =>
 				val currentHeight = input(currentPos)
@@ -30,6 +30,7 @@ val part1 = input
 			updatedState = (_, _, _, _, _) => (),
 		)
 		._2
+		.keySet
 		.count: (p, _) =>
 			input(p) == 9
 	.sum
@@ -39,10 +40,10 @@ println(s"part 1: ${part1}")
 val part2 = input
 	.indicesWhere(0 == _)
 	.map: startPoint =>
-		input.explore[List[Direction], List[Direction]](
+		input.explore[List[Direction], List[Direction], Unit](
 			start = (startPoint, Nil),
 			priority = scala.math.Ordering.fromLessThan((_, _) => true),
-			toSeen = u => u,
+			toSeen = u => (u, ()),
 			continue = (_, _) => true,
 			allowedNextMoves = (currentPos, _) =>
 				val currentHeight = input(currentPos)
@@ -58,6 +59,7 @@ val part2 = input
 			updatedState = (_, pathSoFar, _, next, _) => next :: pathSoFar,
 		)
 		._2
+		.keySet
 		.count: (p, _) =>
 			input(p) == 9
 	.sum
