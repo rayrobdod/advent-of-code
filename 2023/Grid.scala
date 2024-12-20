@@ -142,7 +142,7 @@ class Grid[A](private val backing: Seq[Seq[A]]):
 	 * @param priority highest priority gets checked first.
 	 *	Think the A* heuristic
 	 *	If order does not matter, `scala.math.Ordering.fromLessThan((_, _) => true),` is acceptable
-	 * @param toSeen Convert state from the form useful for the not-yet-visited queue to a form useful for the has-been-visited set
+	 * @param toSeen Convert state from the form useful for the not-yet-visited queue to a form useful for the has-been-visited map
 	 * @param continue if false, short circuit.
 	 * @param allowedNextMoves Which nodes are able to be visited next from the current node
 	 * @param updatedState The state added to the queue, given
@@ -150,18 +150,18 @@ class Grid[A](private val backing: Seq[Seq[A]]):
 	 * @return _1: the point in which traversing was stopped (if the traversal queue did not run out)
 	 *	_2: Every point that has been seen so far
 	 */
-	def explore[QueuedState, SeenState](
+	def explore[QueuedState, SeenKey, SeenValue](
 		start: (Point, QueuedState),
 		priority: scala.math.Ordering[(Point, QueuedState)],
-		toSeen: QueuedState => SeenState,
+		toSeen: QueuedState => (SeenKey, SeenValue),
 		continue: (Point, QueuedState) => Boolean,
 		allowedNextMoves: (Point, QueuedState) => Set[Direction],
 		updatedState: (Point, QueuedState, Point, Direction, A) => QueuedState,
-	):(Option[(Point, QueuedState)], Set[(Point, SeenState)]) =
+	):(Option[(Point, QueuedState)], Map[(Point, SeenKey), SeenValue]) =
 		import scala.collection.mutable
 		val toVisit = mutable.PriorityQueue.empty[(Point, QueuedState)](using priority)
 		toVisit.enqueue(start)
-		val seen = mutable.Set.empty[(Point, SeenState)]
+		val seen = mutable.Map.empty[(Point, SeenKey), SeenValue]
 
 		while toVisit.nonEmpty && continue.tupled(toVisit.head) do
 			val (currentPosition, currentState) = toVisit.dequeue()
@@ -169,18 +169,18 @@ class Grid[A](private val backing: Seq[Seq[A]]):
 			//System.out.print(s"ENTERING: $currentPosition $currentState")
 			//new java.util.Scanner(System.in).nextLine()
 
-			val currentSeen = toSeen(currentState)
-			seen += ((currentPosition, currentSeen))
+			val (currentSeenKey, currentSeenValue) = toSeen(currentState)
+			seen += (((currentPosition, currentSeenKey), currentSeenValue))
 
 			for nextMove <- allowedNextMoves(currentPosition, currentState) do
 				val nextPosition = currentPosition + nextMove.toUnitVector
 				if this.isDefinedAt(nextPosition) then
 					val nextState = updatedState(currentPosition, currentState, nextPosition, nextMove, this(nextPosition))
-					val nextSeen = toSeen(nextState)
-					if ! seen.contains((nextPosition, nextSeen)) then
+					val (nextSeenKey, nextSeenValue) = toSeen(nextState)
+					if ! seen.keySet.contains((nextPosition, nextSeenKey)) then
 						def matchesNext(queued: (Point, QueuedState)): Boolean =
 							val (queuedPosition, queuedState) = queued
-							queuedPosition == nextPosition && toSeen(queuedState) == nextSeen
+							queuedPosition == nextPosition && toSeen(queuedState)._1 == nextSeenKey
 
 						if ! toVisit.exists(matchesNext) then
 							toVisit.enqueue((nextPosition, nextState))
@@ -201,7 +201,7 @@ class Grid[A](private val backing: Seq[Seq[A]]):
 			end for
 		end while
 
-		return (toVisit.headOption, seen.toSet)
+		return (toVisit.headOption, seen.toMap)
 	end explore
 end Grid
 
