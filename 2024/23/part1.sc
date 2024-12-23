@@ -12,10 +12,7 @@ val connections: MultiDict[String, String] =
 			case s"${x}-${y}" => Seq((x, y), (y, x))
 		.to(MultiDict)
 
-val computers: Set[String] = connections
-	.flatMap: (x, y) =>
-		Seq(x, y)
-	.to(Set)
+val computers: Set[String] = connections.keySet.to(Set)
 
 val computersStartingWithT: Set[String] = computers.filter(_.charAt(0) == 't')
 
