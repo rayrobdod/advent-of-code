@@ -12,95 +12,17 @@ val pairs: MultiDict[String, String] =
 			case s"${x}-${y}" => Seq((x, y), (y, x))
 		.to(MultiDict)
 
-/*
-val groups: Set[String] =
-	for
-		_1 <- computers
-		_2 <- connections.sets(_1)
-		_3 <- connections.sets(_1)
-		if connections.containsEntry(_2, _3)
-		if _2 != _3
-		_4 <- connections.sets(_1)
-		if connections.containsEntry(_2, _4)
-		if connections.containsEntry(_3, _4)
-		if _2 != _4
-		if _3 != _4
-		_5 <- connections.sets(_1)
-		if connections.containsEntry(_2, _5)
-		if connections.containsEntry(_3, _5)
-		if connections.containsEntry(_4, _5)
-		if _2 != _5
-		if _3 != _5
-		if _4 != _5
-		_6 <- connections.sets(_1)
-		if connections.containsEntry(_2, _6)
-		if connections.containsEntry(_3, _6)
-		if connections.containsEntry(_4, _6)
-		if connections.containsEntry(_5, _6)
-		if _2 != _5
-		if _3 != _5
-		if _4 != _5
-		if _5 != _6
-	yield
-		SortedSet(_1, _2, _3, _4, _5, _6).mkString(",")
-*/
-// too slow, and not condensing
-
 // Experimentally, all computers have 13 connections
-// Guess that the most connected group has 13 connections
+// Guess that the most connected group has all 14 computers fully connected
 
-/*
-val fullyConnectedGroup = computers.find: _1 =>
-	val rest = connections.sets(_1)
-	rest.forall: _2 =>
-		rest.forall: _3 =>
-			_2 == _3 || connections.containsEntry((_2, _3))
+val fullyConnectedGroup = pairs.sets.find: kvs =>
+	val (_1, vs) = kvs
+	vs.forall: _2 =>
+		vs.forall: _3 =>
+			_2 == _3 || pairs.containsEntry((_2, _3))
 
 println(fullyConnectedGroup) // -> None. So the guess is wrong
-*/
 
-
-/*
-val mostConnectedGroupKey = computers
-	.map: _1 =>
-		val rest = connections.sets(_1)
-		_1 -> rest
-			.map: _2 =>
-				rest.count: _3 =>
-					_2 == _3 || connections.containsEntry((_2, _3))
-			.sum
-
-var group = connections.sets(mostConnectedGroupKey)
-
-val leastConnected1 = locally:
-	group
-		.minBy: _2 =>
-			group.count: _3 =>
-				_2 == _3 || connections.containsEntry((_2, _3))
-
-group = group - leastConnected1
-
-val leastConnected2 = locally:
-	group
-		.minBy: _2 =>
-			group.count: _3 =>
-				_2 == _3 || connections.containsEntry((_2, _3))
-
-group = group - leastConnected2
-
-val connectionsCount = locally:
-	group
-		.toSeq
-		.map: _2 =>
-			group.count: _3 =>
-				_2 == _3 || connections.containsEntry((_2, _3))
-
-println(connectionsCount)
-
-group = group + mostConnectedGroupKey
-
-println(group.toSeq.sorted.mkString(","))
-*/
 
 
 val triples: MultiDict[(String, String), String] =
