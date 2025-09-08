@@ -46,13 +46,31 @@ EntryPoint:
 	ld bc, Part1String.end - Part1String
 	rst Copy
 
-	ld a, [Accumulator + 3]
+	ld a, [Accumulator1 + 3]
 	ld b, a
-	ld a, [Accumulator + 2]
+	ld a, [Accumulator1 + 2]
 	ld c, a
-	ld a, [Accumulator + 1]
+	ld a, [Accumulator1 + 1]
 	ld d, a
-	ld a, [Accumulator]
+	ld a, [Accumulator1]
+	ld e, a
+	call PrintHex_BCDE
+
+	call Part2
+
+	; Print the resut of Part 2
+	ld de, Part2String
+	ld hl, $9841
+	ld bc, Part2String.end - Part2String
+	rst Copy
+
+	ld a, [Accumulator2 + 3]
+	ld b, a
+	ld a, [Accumulator2 + 2]
+	ld c, a
+	ld a, [Accumulator2 + 1]
+	ld d, a
+	ld a, [Accumulator2]
 	ld e, a
 	call PrintHex_BCDE
 
@@ -74,8 +92,8 @@ SECTION "Part1", ROM0
 Part1:
 	ld hl, Input
 
-	ASSERT(Accumulator & $FF00 == $FF00)
-	ld c, LOW(Accumulator)
+	ASSERT(Accumulator1 & $FF00 == $FF00)
+	ld c, LOW(Accumulator1)
 	ld a, 0
 	REPT 4
 	ldh [c], a
@@ -133,7 +151,7 @@ Part1:
 	jp .forEachCell
 
 .lineEnd
-	; Accumulator += LineMax - LineMin
+	; Accumulator1 += LineMax - LineMin
 	ldh a, [LineMin]
 	ld e, a
 	ldh a, [LineMin + 1]
@@ -152,35 +170,104 @@ Part1:
 	daa
 	ld b, a
 
-	ldh a, [Accumulator]
+	ldh a, [Accumulator1]
 	add a, c
 	daa
-	ldh [Accumulator], a
-	ldh a, [Accumulator + 1]
+	ldh [Accumulator1], a
+	ldh a, [Accumulator1 + 1]
 	adc a, b
 	daa
-	ldh [Accumulator + 1], a
+	ldh [Accumulator1 + 1], a
 	ld b, 0
-	ldh a, [Accumulator + 2]
+	ldh a, [Accumulator1 + 2]
 	adc a, b
 	daa
-	ldh [Accumulator + 2], a
-	ldh a, [Accumulator + 3]
+	ldh [Accumulator1 + 2], a
+	ldh a, [Accumulator1 + 3]
 	adc a, b
 	daa
-	ldh [Accumulator + 3], a
+	ldh [Accumulator1 + 3], a
 
 	jp .forEachLine
 
 	ret
 
-SECTION "Part1_Vars", HRAM
-Accumulator:
+SECTION "Part1_Vars", HRAM, ALIGN[4]
+Accumulator1:
 	DL
 LineMax:
 	DW
 LineMin:
 	DW
+
+SECTION "Part2", ROM0
+Part2:
+	ld hl, Sample
+
+	ASSERT(Accumulator2 & $FF00 == $FF00)
+	ld c, LOW(Accumulator2)
+	ld a, 0
+	REPT 4
+	ldh [c], a
+	inc c
+	ENDR
+
+.forEachLine
+	ld a, [hl]
+	cp a, "\n"
+	ret z
+
+	call Parse_16_BC
+	ld a, c
+	ldh [NumbersInLine], a
+	ld a, b
+	ldh [NumbersInLine+1], a
+
+	ld a, 1
+	ldh [NumbersInLineCount], a
+
+.parseCell
+	ld a, [hl+]
+	cp a, "\n"
+	jp z, .parseCellsEnd
+
+	call Parse_16_BC
+	ldh a, [NumbersInLineCount]
+	ld d, b
+	ld e, c
+	ld c, LOW(NumbersInLine)
+	sla a
+	add a, c
+	ld c, a
+	ld a, e
+	ld [c], a
+	inc c
+	ld a, d
+	ld [c], a
+
+	ldh a, [NumbersInLineCount]
+	inc a
+	ldh [NumbersInLineCount], a
+	jr .parseCell
+
+.parseCellsEnd
+
+
+	jp .forEachLine
+
+SECTION "Part2_Vars", HRAM, ALIGN[4]
+Accumulator2:
+	DL
+NumbersInLine:
+	REPT 20
+	DW
+	ENDR
+NumbersInLineCount:
+	DB
+Ptr1:
+	DB
+Ptr2:
+	DB
 
 SECTION "Font", ROM0
 Font:
@@ -189,6 +276,11 @@ Font:
 SECTION "Input", ROM0
 Input:
 	INCBIN "input.txt"
+	DB "\n"
+
+SECTION "Sample", ROM0
+Sample:
+	INCBIN "sample.txt"
 	DB "\n"
 
 SECTION "Part Strings", ROM0
